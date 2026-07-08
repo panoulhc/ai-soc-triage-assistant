@@ -1,0 +1,9 @@
+{
+  "alert_name": "Multiple Failed Login Attempts",
+  "username": "admin",
+  "source_ip": "203.0.113.16",
+  "destination_host": "WIN-SRV-01",
+  "failed_attempts": 45,
+  "time_window": "10 minutes",
+  "timestamp": "2026-02-13T18:35:00Z"
+}

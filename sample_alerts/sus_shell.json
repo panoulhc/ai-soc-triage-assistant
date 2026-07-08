@@ -1,0 +1,10 @@
+{
+  "alert_name": "Suspicious PowerShell Execution",
+  "hostname": "WIN-CLIENT-07",
+  "username": "alex",
+  "process_name": "powershell.exe",
+  "command_line": "powershell.exe -NoP -W Hidden -enc SQBFAFgA",
+  "parent_process": "winword.exe",
+  "source_ip": "10.0.0.15",
+  "timestamp": "2026-05-01T15:42:00Z"
+}
