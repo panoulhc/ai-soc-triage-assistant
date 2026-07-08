@@ -280,8 +280,15 @@ Generated reports include:
 <br>
 
 <p align="center">
-  <img src="scrs/rep.png" width="48%" alt="Generated Report">
-  <img src="scrs/raw.png" width="48%" alt="Raw JSON Output">
+  <img src="scrs/report1.png" width="32%" alt="Generated Report Part 1">
+  <img src="scrs/report2.png" width="32%" alt="Generated Report Part 2">
+  <img src="scrs/report3.png" width="32%" alt="Generated Report Part 3">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="scrs/raw.png" width="70%" alt="Raw JSON Output">
 </p>
 
 ## Future Improvements
