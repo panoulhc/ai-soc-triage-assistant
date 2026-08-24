@@ -1,0 +1,10 @@
+{
+  "id": "alert-004",
+  "title": "Suspicious outbound connection with related threat infrastructure",
+  "severity": "high",
+  "source": "firewall",
+  "timestamp": "2026-08-01T21:30:00Z",
+  "host": "workstation-17",
+  "description": "Internal host workstation-17 made an outbound HTTPS connection to suspicious domain login-security-check.example and IP 203.0.113.45. The event may indicate phishing or malware delivery infrastructure.",
+  "raw_log": "2026-08-01T21:30:00Z firewall allow src=10.0.0.17 host=workstation-17 dst=203.0.113.45 domain=login-security-check.example url=https://login-security-check.example/update.exe"
+}
