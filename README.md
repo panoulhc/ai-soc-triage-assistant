@@ -21,6 +21,13 @@ This project builds on my previous AI security project: [LLM Prompt Injection De
 
 That project focused on vulnerable vs defensive AI assistant behavior. This project applies those defensive AI concepts to a real SOC workflow.
 
+## What’s New: ThreatGraph AI
+
+This project now includes *ThreatGraph AI*, an investigation module that extends the original SOC triage workflow with IOC relationship mapping, graph-based risk scoring, and AI-generated investigation summaries.
+
+Instead of only summarizing individual alerts, ThreatGraph AI turns suspicious security events into an interactive threat intelligence graph. The graph connects alerts, internal hosts, IP addresses, domains, URLs, enrichment results, tags, and MITRE ATT&CK techniques to help analysts understand the broader context of an incident.
+
+
 ## Features
 
 - JSON alert triage
