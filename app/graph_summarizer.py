@@ -61,7 +61,6 @@ Risk result:
     response = client.messages.create(
         model=os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-latest"),
         max_tokens=700,
-        temperature=0.2,
         messages=[
             {
                 "role": "user",
@@ -145,6 +144,6 @@ def _fallback_summary(
 
     if error:
         summary.append("")
-        summary.append(f"Claude fallback note: {error}")
+        summary.append("Claude was unavailable, so a local fallback summary was generated.")
 
     return "\n".join(summary)

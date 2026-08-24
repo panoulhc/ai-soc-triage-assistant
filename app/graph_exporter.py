@@ -7,6 +7,7 @@ Exports ThreatGraph AI results to JSON and optional interactive HTML.
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -223,3 +224,94 @@ def _type_to_font_size(node_type: str) -> int:
     }
 
     return sizes.get(node_type, 14)
+
+
+def render_graph_html_string(graph: Graph) -> str:
+    """
+    Renders the graph as an HTML string for Streamlit embedding.
+    Uses inline resources so it does not create a local lib/ folder.
+    """
+    try:
+        from pyvis.network import Network
+    except ImportError as exc:
+        raise ImportError("pyvis is required. Run: python3 -m pip install pyvis") from exc
+
+    net = Network(
+        height="700px",
+        width="100%",
+        bgcolor="#111827",
+        font_color="white",
+        directed=True,
+        cdn_resources="in_line",
+    )
+
+    for node in graph.get("nodes", []):
+        node_type = node.get("type", "unknown")
+
+        net.add_node(
+            node.get("id"),
+            label=_short_label(str(node.get("label", "")), node_type),
+            title=_node_tooltip(node),
+            color=_risk_to_color(node.get("risk", "unknown")),
+            shape=_type_to_shape(node_type),
+            size=_type_to_size(node_type),
+            font={
+                "size": _type_to_font_size(node_type),
+                "color": "white",
+                "strokeWidth": 2,
+                "strokeColor": "#111827",
+            },
+        )
+
+    for edge in graph.get("edges", []):
+        net.add_edge(
+            edge.get("source"),
+            edge.get("target"),
+            title=edge.get("relationship", "related_to"),
+            arrows="to",
+            color="#f97316",
+        )
+
+    net.set_options(
+        """
+        var options = {
+          "nodes": {
+            "borderWidth": 1,
+            "shadow": false
+          },
+          "edges": {
+            "width": 1,
+            "smooth": {
+              "type": "dynamic"
+            },
+            "font": {
+              "size": 0
+            }
+          },
+          "physics": {
+            "enabled": true,
+            "barnesHut": {
+              "gravitationalConstant": -12000,
+              "centralGravity": 0.25,
+              "springLength": 180,
+              "springConstant": 0.03,
+              "damping": 0.35,
+              "avoidOverlap": 1
+            },
+            "minVelocity": 0.75
+          },
+          "interaction": {
+            "hover": true,
+            "tooltipDelay": 120,
+            "hideEdgesOnDrag": true,
+            "navigationButtons": true,
+            "keyboard": true
+          }
+        }
+        """
+    )
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        html_path = Path(tmpdir) / "threatgraph.html"
+        net.write_html(str(html_path))
+        return html_path.read_text(encoding="utf-8")

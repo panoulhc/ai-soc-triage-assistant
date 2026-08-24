@@ -1,5 +1,8 @@
 import json
 from pathlib import Path
+import streamlit.components.v1 as components
+from app.threatgraph_pipeline import run_threatgraph_analysis
+from app.graph_exporter import render_graph_html_string
 
 import streamlit as st
 
@@ -186,3 +189,116 @@ if analyze_button:
 
     except Exception as exc:
         st.error(str(exc))
+
+
+st.divider()
+
+st.header("🕸️ ThreatGraph AI")
+st.caption(
+    "IOC relationship mapping, graph-based risk scoring, and analyst-style investigation summary."
+)
+
+sample_path = Path("sample_alerts/threatgraph_case.json")
+
+if sample_path.exists():
+    with sample_path.open("r", encoding="utf-8") as file:
+        threatgraph_alert = json.load(file)
+else:
+    threatgraph_alert = {
+        "id": "alert-004",
+        "title": "Suspicious outbound connection",
+        "severity": "high",
+        "host": "workstation-17",
+        "description": "Internal host made an outbound connection to suspicious infrastructure.",
+    }
+
+demo_iocs = [
+    {"value": "203.0.113.45", "type": "ip"},
+    {"value": "login-security-check.example", "type": "domain"},
+    {"value": "https://login-security-check.example/update.exe", "type": "url"},
+]
+
+demo_enrichment = {
+    "203.0.113.45": {
+        "reputation": -15,
+        "country": "US",
+        "asn": 64500,
+        "last_analysis_stats": {
+            "malicious": 3,
+            "suspicious": 2,
+            "harmless": 10,
+            "undetected": 55,
+        },
+        "tags": ["phishing", "malware-delivery"],
+    },
+    "login-security-check.example": {
+        "reputation": -8,
+        "last_analysis_stats": {
+            "malicious": 2,
+            "suspicious": 1,
+            "harmless": 5,
+            "undetected": 40,
+        },
+        "tags": ["phishing"],
+    },
+    "https://login-security-check.example/update.exe": {
+        "reputation": -12,
+        "last_analysis_stats": {
+            "malicious": 4,
+            "suspicious": 2,
+            "harmless": 6,
+            "undetected": 38,
+        },
+        "tags": ["payload", "suspicious-download"],
+    },
+}
+
+demo_triage = {
+    "severity": "high",
+    "mitre_techniques": [
+        {"id": "T1566", "name": "Phishing"},
+        {"id": "T1105", "name": "Ingress Tool Transfer"},
+    ],
+}
+
+with st.expander("Run ThreatGraph AI demo investigation", expanded=True):
+    use_claude_graph = st.checkbox(
+        "Use Claude for graph summary",
+        value=False,
+        help="Keep disabled if you do not want to spend API credits.",
+    )
+
+    result = run_threatgraph_analysis(
+        alert=threatgraph_alert,
+        extracted_iocs=demo_iocs,
+        enrichment_results=demo_enrichment,
+        triage_result=demo_triage,
+        use_claude=use_claude_graph,
+    )
+
+    graph = result["graph"]
+    graph_stats = result["graph_stats"]
+    graph_risk = result["graph_risk"]
+    graph_summary = result["graph_summary"]
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Graph Risk", graph_risk["level"].upper())
+    col2.metric("Risk Score", f"{graph_risk['score']}/100")
+    col3.metric("Nodes", graph_stats["node_count"])
+    col4.metric("Edges", graph_stats["edge_count"])
+
+    st.subheader("Interactive Threat Graph")
+
+    try:
+        graph_html = render_graph_html_string(graph)
+        components.html(graph_html, height=720, scrolling=False)
+    except Exception as exc:
+        st.error(f"Could not render graph: {exc}")
+        st.json(graph)
+
+    st.subheader("AI Investigation Summary")
+    st.text(graph_summary)
+
+    with st.expander("Raw ThreatGraph JSON"):
+        st.json(graph)
